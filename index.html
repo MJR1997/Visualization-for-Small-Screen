@@ -1,0 +1,146 @@
+
+<meta charset="utf-8">
+
+
+		<!-- Referencing -->
+
+		<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+        <script src="http://code.jquery.com/jquery-3.3.1.js" integrity="sha256-2Kok7MbOyxpgUVvAk/HJ2jigOSYS2auK4Pfzbm7uH60="crossorigin="anonymous"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js" integrity="sha384-UO2eT0CpHqdSJQ6hJty5KVphtPhzWj9WO1clHTMGa3JDZwrnQq4sF86dIHNDz0W1" crossorigin="anonymous"></script>
+        <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js" integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM" crossorigin="anonymous"></script>
+        <link href='https://fonts.googleapis.com/css?family=Aldrich' rel='stylesheet'>
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+
+
+
+                    <!-- Load d3.js -->
+                    <script src="https://d3js.org/d3.v4.js"></script>
+                    <form action="Viz_2.html">
+                        <input type="submit" value="Click Here for unresponsive Visualization" />
+                            </form>
+                    <p>Visualization Hub</p>
+
+                        
+                    <select id="selectButton"></select>
+
+                    <div id="viz_1"></div>
+                    <svg width = "200" height = "200" id="viz_2"></svg>
+
+
+                    <!-- Color Scale -->
+                    <script src="https://d3js.org/d3-scale-chromatic.v1.min.js"></script>
+
+
+<script>
+
+// set the dimensions and margins of the graph
+var margin = {top: 10, right: 100, bottom: 30, left: 30},
+    width = 460 - margin.left - margin.right,
+    height = 400 - margin.top - margin.bottom;
+
+// append the svg object to the body of the page
+var svg = d3.select("#viz_1")
+  .append("svg")
+    .attr("viewBox", "-20 -20 900 1000" )
+  .append("g")
+    .attr("transform",
+          "translate(" + margin.left + "," + margin.top + ")");
+
+//Read the data
+d3.csv("prices.csv", function(data) {
+
+    // List of groups (here I have one group per column)
+    var allGroup = ["productA", "productB", "productC", "productD"]
+
+    // add the options to the button
+    d3.select("#selectButton")
+      .selectAll('myOptions')
+     	.data(allGroup)
+      .enter()
+    	.append('option')
+      .text(function (d) { return d; }) // text showed in the menu
+      .attr("value", function (d) { return d; }) // corresponding value returned by the button
+
+    // A color scale: one color for each group
+    var myColor = d3.scaleOrdinal()
+      .domain(allGroup)
+      .range(d3.schemeSet2);
+
+    // Add X axis --> it is a date format
+    var x_1 = d3.scaleLinear()
+      .domain([1,10])
+      .range([ 0, width ]);
+    svg.append("g")
+      .attr("transform", "translate(0," + height + ")")
+      .call(d3.axisBottom(x_1));
+
+    // Add Y axis
+    var y_1 = d3.scaleLinear()
+      .domain( [90,110])
+      .range([ height, 0 ]);
+    svg.append("g")
+      .call(d3.axisLeft(y_1));
+
+    // Initialize line with group a
+    var line = svg
+      .append('g')
+      .append("path")
+        .datum(data)
+        .attr("d", d3.line()
+          .x(function(d) { return x_1(+d.week) })
+          .y(function(d) { return y_1(+d.productA) })
+        )
+        .attr("stroke", function(d){ return myColor("productA") })
+        .style("stroke-width", 4)
+        .style("fill", "none")
+
+    // A function that update the chart
+    function update(selectedGroup) {
+
+      // Create new data with the selection?
+      var dataFilter = data.map(function(d){return {week: d.week, product:d[selectedGroup]} })
+
+      // Give these new data to update line
+      line
+          .datum(dataFilter)
+          .transition()
+          .duration(1000)
+          .attr("d", d3.line()
+            .x(function(d) { return x_1(+d.week) })
+            .y(function(d) { return y_1(+d.product) })
+          )
+          .attr("stroke", function(d){ return myColor(selectedGroup) })
+    }
+
+    // When the button is changed, run the updateChart function
+    d3.select("#selectButton").on("change", function(d) {
+        // recover the option that has been chosen
+        var selectedOption = d3.select(this).property("value")
+        // run the updateChart function with this selected option
+        update(selectedOption)
+    })
+    
+    
+       var svg2 = d3.select("#viz_2")
+                    svg2.append("circle")
+                    .attr("cx",100)
+                    .attr("cy", 100)
+                    .attr("r", 90)
+                    .attr("fill", "blue");
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+
+})
+
+  
+</script>
